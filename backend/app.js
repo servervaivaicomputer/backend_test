@@ -1,60 +1,89 @@
+require('dotenv').config();
 const express = require('express');
-const path = require('path');
 const cors = require('cors');
-const cookieParser = require('cookie-parser');
-const auth = require('./middleware/auth');
+const path = require('path');
+const jwt = require('jsonwebtoken');
+const authMiddleware = require('./middleware/auth');
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
+// Middleware
 app.use(cors({
-  origin: 'https://your-frontend.netlify.app',  // frontend URL
+  origin: process.env.FRONTEND_URL || '*',
   credentials: true
 }));
 app.use(express.json());
-app.use(cookieParser());
 
-// ---- Login route (no DB, hardcoded or env-based) ----
-app.post('/login', (req, res) => {
+// In-memory user (no database)
+const USERS = [
+  {
+    id: 1,
+    username: process.env.ADMIN_USER || 'admin',
+    password: process.env.ADMIN_PASS || 'admin123'
+  }
+];
+
+// ─── PUBLIC ROUTES ──────────────────────────────────
+
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+app.post('/api/login', (req, res) => {
   const { username, password } = req.body;
-  const validUser = process.env.ADMIN_USER;
-  const validPass = process.env.ADMIN_PASS;
 
-  if (username === validUser && password === validPass) {
-    // Simple token (JWT or random string stored in cookie)
-    const token = Buffer.from(`${username}:${Date.now()}`).toString('base64');
-    res.cookie('auth_token', token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      maxAge: 3600000 // 1 hour
+  if (!username || !password) {
+    return res.status(400).json({
+      success: false,
+      error: 'Username and password are required.'
     });
-    return res.json({ success: true, message: 'Logged in' });
-  }
-  res.status(401).json({ success: false, message: 'Invalid credentials' });
-});
-
-// ---- Logout ----
-app.post('/logout', (req, res) => {
-  res.clearCookie('auth_token');
-  res.json({ success: true });
-});
-
-// ---- Protected pages (from private folder) ----
-app.get('/page/:pageName', auth, (req, res) => {
-  const pageName = req.params.pageName;
-  const allowedPages = ['cloud', 'workplace'];
-
-  if (!allowedPages.includes(pageName)) {
-    return res.status(404).send('Page not found');
   }
 
-  res.sendFile(path.join(__dirname, 'private', `${pageName}.html`));
+  const user = USERS.find(
+    u => u.username === username && u.password === password
+  );
+
+  if (!user) {
+    return res.status(401).json({
+      success: false,
+      error: 'Invalid credentials.'
+    });
+  }
+
+  const token = jwt.sign(
+    { id: user.id, username: user.username },
+    process.env.JWT_SECRET,
+    { expiresIn: '24h' }
+  );
+
+  res.json({
+    success: true,
+    token,
+    username: user.username
+  });
 });
 
-// ---- Check auth status ----
-app.get('/check-auth', auth, (req, res) => {
-  res.json({ authenticated: true });
+app.get('/api/verify', authMiddleware, (req, res) => {
+  res.json({ success: true, user: req.user });
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// ─── PROTECTED ROUTES ───────────────────────────────
+// Private pages served from backend/private/ folder
+
+app.get('/cloud', authMiddleware, (req, res) => {
+  res.sendFile(path.join(__dirname, 'private', 'cloud.html'));
+});
+
+app.get('/workplace', authMiddleware, (req, res) => {
+  res.sendFile(path.join(__dirname, 'private', 'workplace.html'));
+});
+
+// Catch-all
+app.use((req, res) => {
+  res.status(404).json({ success: false, error: 'Route not found.' });
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT}`);
+});
