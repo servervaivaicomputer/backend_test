@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cloud</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Courier New', monospace;
+      background: #0d0d0d;
+      color: #e0e0e0;
+      padding: 40px;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      color: #c8ff00;
+      margin-bottom: 12px;
+    }
+
+    p {
+      color: #888;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    .card {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+
+    .card h3 {
+      color: #f0f0f0;
+      margin-bottom: 8px;
+    }
+
+    .card p {
+      font-size: 0.85rem;
+    }
+
+    .stat {
+      display: inline-block;
+      background: rgba(200, 255, 0, 0.08);
+      border: 1px solid rgba(200, 255, 0, 0.2);
+      color: #c8ff00;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      margin-right: 8px;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>☁ Cloud Dashboard</h1>
+  <p>Manage your cloud resources from here.</p>
+
+  <div class="card">
+    <h3>Storage</h3>
+    <p>All your uploaded files and backups are stored here.</p>
+    <span class="stat">12 files</span>
+    <span class="stat">2.4 GB used</span>
+  </div>
+
+  <div class="card">
+    <h3>Deployments</h3>
+    <p>Recent app deployments and status.</p>
+    <span class="stat">3 active</span>
+    <span class="stat">last: 2h ago</span>
+  </div>
+
+  <div class="card">
+    <h3>API Keys</h3>
+    <p>Manage your keys and tokens securely.</p>
+    <span class="stat">2 keys</span>
+  </div>
+</body>
+</html>
