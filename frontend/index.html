@@ -3,576 +3,449 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>App</title>
+  <title>Private Portal</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0a0a0a;
-      --surface: #141414;
-      --surface-hover: #1e1e1e;
-      --accent: #c8ff00;
-      --accent-dim: #a3cc00;
-      --text-primary: #f0ece4;
-      --text-muted: #6b6560;
-      --danger: #ff3b3b;
-      --border: #2a2a2a;
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --border: #2a2a3a;
+      --accent: #6c63ff;
+      --accent-glow: rgba(108, 99, 255, 0.15);
+      --text: #e8e6f0;
+      --text-muted: #6b6880;
+      --danger: #ff4757;
+      --success: #2ed573;
       --radius: 12px;
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       font-family: 'DM Mono', monospace;
       background: var(--bg);
-      color: var(--text-primary);
+      color: var(--text);
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+      overflow-x: hidden;
     }
 
     body::before {
       content: '';
-      position: fixed;
-      inset: 0;
-      background:
-        radial-gradient(ellipse at 15% 80%, rgba(200, 255, 0, 0.03) 0%, transparent 50%),
-        radial-gradient(ellipse at 85% 20%, rgba(200, 255, 0, 0.02) 0%, transparent 40%);
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+      opacity: 0.03;
       pointer-events: none;
-      z-index: 0;
+      z-index: 9999;
     }
 
-    /* ---- Nav ---- */
+    /* ── NAVBAR ─────────────────────────── */
     nav {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 20px 40px;
+      position: fixed; top: 0; left: 0; right: 0;
+      height: 64px;
+      background: rgba(18, 18, 26, 0.85);
+      backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
-      background: rgba(10, 10, 10, 0.85);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px;
+      z-index: 100;
     }
 
-    .logo {
+    nav .brand {
       font-family: 'Syne', sans-serif;
-      font-weight: 800;
-      font-size: 1.3rem;
+      font-weight: 800; font-size: 1.15rem;
       letter-spacing: -0.02em;
-      color: var(--text-primary);
-      cursor: pointer;
-      transition: color 0.2s ease;
     }
 
-    .logo:hover {
-      color: var(--accent);
-    }
+    nav .nav-links { display: flex; gap: 6px; }
 
-    .nav-links {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .nav-link {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.8rem;
-      font-weight: 400;
+    nav .nav-links a {
+      font-size: 0.78rem;
       color: var(--text-muted);
       text-decoration: none;
-      padding: 8px 18px;
-      border: 1px solid transparent;
+      padding: 8px 16px;
       border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+
+    nav .nav-links a:hover,
+    nav .nav-links a.active {
+      color: var(--text);
+      background: var(--accent-glow);
+    }
+
+    nav .user-section { display: flex; align-items: center; gap: 14px; }
+
+    nav .user-section span {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .btn-logout {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      padding: 6px 14px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: 6px;
       cursor: pointer;
-      background: none;
-      transition: all 0.25s ease;
-      letter-spacing: 0.02em;
+      transition: all 0.2s ease;
     }
 
-    .nav-link:hover {
-      color: var(--text-primary);
-      border-color: var(--border);
-      background: var(--surface);
-    }
-
-    .nav-link.active {
-      color: var(--bg);
-      background: var(--accent);
-      border-color: var(--accent);
-      font-weight: 500;
-    }
-
-    #btn-logout {
-      color: var(--danger);
-      border-color: transparent;
-    }
-
-    #btn-logout:hover {
-      background: rgba(255, 59, 59, 0.1);
-      border-color: rgba(255, 59, 59, 0.3);
+    .btn-logout:hover {
+      border-color: var(--danger);
       color: var(--danger);
     }
 
-    /* ---- Main ---- */
+    /* ── MAIN CONTENT ───────────────────── */
     main {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 40px;
-      position: relative;
-      z-index: 1;
+      padding: 96px 32px 48px;
+      max-width: 1100px;
+      margin: 0 auto;
+      min-height: 100vh;
     }
 
-    /* ---- Login Card ---- */
-    .login-card {
-      width: 100%;
-      max-width: 420px;
+    /* ── LOGIN PAGE ─────────────────────── */
+    .login-wrap {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; padding: 24px;
+    }
+
+    .login-box {
+      width: 100%; max-width: 400px;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 48px 40px;
-      animation: fadeUp 0.5s ease forwards;
+      animation: fadeUp 0.5s ease;
     }
 
-    .login-card h1 {
+    .login-box h1 {
       font-family: 'Syne', sans-serif;
-      font-weight: 700;
-      font-size: 1.8rem;
-      margin-bottom: 6px;
+      font-weight: 700; font-size: 1.8rem;
       letter-spacing: -0.03em;
+      margin-bottom: 6px;
     }
 
-    .login-card p.sub {
+    .login-box .subtitle {
       color: var(--text-muted);
-      font-size: 0.78rem;
+      font-size: 0.85rem;
       margin-bottom: 36px;
     }
 
-    .form-group {
-      margin-bottom: 20px;
-    }
+    .field { margin-bottom: 20px; }
 
-    .form-group label {
+    .field label {
       display: block;
       font-size: 0.72rem;
-      font-weight: 500;
       color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
       margin-bottom: 8px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
     }
 
-    .form-group input {
+    .field input {
       width: 100%;
-      padding: 14px 16px;
-      font-family: 'DM Mono', monospace;
-      font-size: 0.88rem;
-      color: var(--text-primary);
+      padding: 12px 16px;
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 8px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.88rem;
       outline: none;
-      transition: border-color 0.25s ease;
+      transition: border-color 0.2s ease;
     }
 
-    .form-group input:focus {
-      border-color: var(--accent);
-    }
-
-    .form-group input::placeholder {
-      color: var(--text-muted);
-      opacity: 0.5;
-    }
+    .field input:focus { border-color: var(--accent); }
 
     .btn-primary {
       width: 100%;
       padding: 14px;
-      font-family: 'DM Mono', monospace;
-      font-size: 0.85rem;
-      font-weight: 500;
-      color: var(--bg);
       background: var(--accent);
-      border: none;
-      border-radius: 8px;
+      color: #fff;
+      border: none; border-radius: 8px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 600; font-size: 0.95rem;
       cursor: pointer;
-      transition: all 0.25s ease;
-      letter-spacing: 0.02em;
+      transition: all 0.2s ease;
       margin-top: 8px;
     }
 
     .btn-primary:hover {
-      background: var(--accent-dim);
       transform: translateY(-1px);
+      box-shadow: 0 8px 32px var(--accent-glow);
     }
 
-    .btn-primary:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-      transform: none;
-    }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-    .error-msg {
+    .msg-error {
       color: var(--danger);
       font-size: 0.78rem;
-      margin-top: 16px;
-      min-height: 1.2em;
-      text-align: center;
+      margin-top: 14px;
+      display: none;
     }
 
-    /* ---- Protected Page Container ---- */
-    .page-container {
-      width: 100%;
-      max-width: 960px;
-      animation: fadeUp 0.4s ease forwards;
-    }
+    .msg-error.show { display: block; animation: fadeUp 0.3s ease; }
 
-    .page-container .page-header {
-      margin-bottom: 32px;
-    }
+    /* ── PAGE CONTENT (from backend) ────── */
+    .page-header { margin-bottom: 48px; animation: fadeUp 0.5s ease; }
 
-    .page-container .page-header h1 {
+    .page-header h1 {
       font-family: 'Syne', sans-serif;
-      font-weight: 700;
-      font-size: 2rem;
+      font-weight: 700; font-size: 2.2rem;
       letter-spacing: -0.03em;
+      margin-bottom: 8px;
     }
 
-    .page-container .page-header .tag {
-      display: inline-block;
-      margin-top: 8px;
-      font-size: 0.7rem;
-      font-weight: 500;
-      color: var(--accent);
-      background: rgba(200, 255, 0, 0.08);
-      border: 1px solid rgba(200, 255, 0, 0.15);
-      padding: 4px 12px;
-      border-radius: 20px;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
+    .page-header p { color: var(--text-muted); font-size: 0.88rem; }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
     }
 
-    .page-content {
+    .card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 40px;
-      line-height: 1.7;
-      font-size: 0.9rem;
-      color: var(--text-primary);
-      min-height: 200px;
+      padding: 28px;
+      transition: all 0.3s ease;
+      opacity: 0;
+      animation: fadeUp 0.5s ease forwards;
     }
 
-    /* ---- Loading Spinner ---- */
-    .loader-wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
+    .card:nth-child(1) { animation-delay: 0.08s; }
+    .card:nth-child(2) { animation-delay: 0.16s; }
+    .card:nth-child(3) { animation-delay: 0.24s; }
+    .card:nth-child(4) { animation-delay: 0.32s; }
+
+    .card:hover {
+      border-color: var(--accent);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    .card-icon { font-size: 1.8rem; margin-bottom: 14px; }
+
+    .card h3 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 600; font-size: 1.05rem;
+      margin-bottom: 8px;
+    }
+
+    .card p { color: var(--text-muted); font-size: 0.82rem; line-height: 1.6; }
+
+    .status.online { color: var(--success); }
+
+    /* ── LOADING ────────────────────────── */
+    .loading {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 60vh;
     }
 
     .spinner {
-      width: 36px;
-      height: 36px;
+      width: 36px; height: 36px;
       border: 3px solid var(--border);
       border-top-color: var(--accent);
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
     }
 
-    .spinner-label {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-    }
-
-    /* ---- Animations ---- */
+    /* ── ANIMATIONS ─────────────────────── */
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(24px); }
+      from { opacity: 0; transform: translateY(20px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ---- Responsive ---- */
-    @media (max-width: 600px) {
-      nav {
-        padding: 16px 20px;
-      }
-      .login-card {
-        padding: 36px 24px;
-      }
-      .page-content {
-        padding: 24px;
-      }
+    /* ── RESPONSIVE ─────────────────────── */
+    @media (max-width: 768px) {
+      nav { padding: 0 16px; }
+      main { padding: 88px 16px 32px; }
+      .page-header h1 { font-size: 1.7rem; }
+      .card-grid { grid-template-columns: 1fr; }
+      nav .user-section span { display: none; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Nav -->
-  <nav id="navbar">
-    <div class="logo" onclick="navigate('/')">myapp</div>
-    <div class="nav-links" id="nav-links"></div>
+  <nav id="navbar" style="display:none">
+    <div class="brand">PrivatePortal</div>
+    <div class="nav-links">
+      <a href="/cloud" data-link="/cloud">Cloud</a>
+      <a href="/workplace" data-link="/workplace">Workplace</a>
+    </div>
+    <div class="user-section">
+      <span id="user-display"></span>
+      <button class="btn-logout" id="btnLogout">Logout</button>
+    </div>
   </nav>
 
-  <!-- Page Mount -->
   <main id="app"></main>
 
   <script>
-    // ========================================
-    // CONFIG
-    // ========================================
-    const BACKEND = 'https://your-backend.onrender.com'; // <-- Change this
+    // ═══════════════════════════════════════
+    //  CONFIGURATION
+    //  Replace with your actual Render URL
+    // ═══════════════════════════════════════
+    const API = 'https://your-backend.onrender.com';
 
-    // ========================================
-    // STATE
-    // ========================================
-    let isLoggedIn = false;
-    let currentRoute = '/';
-
-    // ========================================
-    // ROUTER
-    // ========================================
-    const routes = {
-      '/login': renderLogin,
-      '/cloud': renderProtected,
-      '/workplace': renderProtected,
-      '/': renderHome,
+    // ── Auth helpers ──────────────────────
+    const auth = {
+      get token()  { return localStorage.getItem('token'); },
+      get user()   { return localStorage.getItem('username'); },
+      save(token, username) {
+        localStorage.setItem('token', token);
+        localStorage.setItem('username', username);
+      },
+      clear() {
+        localStorage.removeItem('token');
+        localStorage.removeItem('username');
+      },
+      loggedIn() { return !!this.token; }
     };
 
-    function navigate(path) {
-      history.pushState(null, '', path);
-      handleRoute();
+    // ── Router ────────────────────────────
+    const pages = { '/login': showLogin, '/cloud': showPage, '/workplace': showPage };
+
+    function navigate(path, push = true) {
+      if (push) history.pushState({}, '', path);
+      resolve(path);
     }
 
-    window.addEventListener('popstate', handleRoute);
+    function resolve(path) {
+      if (!auth.loggedIn() && path !== '/login') return navigate('/login');
+      if (auth.loggedIn() && path === '/login')  return navigate('/cloud');
 
-    async function handleRoute() {
-      const path = window.location.pathname;
-      currentRoute = path;
-
-      // Check auth first
-      await checkAuth();
-
-      const protectedRoutes = ['/cloud', '/workplace'];
-
-      if (protectedRoutes.includes(path) && !isLoggedIn) {
-        navigate('/login');
-        return;
-      }
-
-      if (path === '/login' && isLoggedIn) {
-        navigate('/cloud');
-        return;
-      }
-
-      const handler = routes[path] || renderNotFound;
-      handler(path);
-      updateNav();
+      const handler = pages[path];
+      if (handler) handler(path);
+      else auth.loggedIn() ? navigate('/cloud') : navigate('/login');
     }
 
-    // ========================================
-    // AUTH
-    // ========================================
-    async function checkAuth() {
+    // ── Login page ────────────────────────
+    function showLogin() {
+      document.getElementById('navbar').style.display = 'none';
+      document.getElementById('app').style.paddingTop = '0';
+
+      document.getElementById('app').innerHTML = `
+        <div class="login-wrap">
+          <div class="login-box">
+            <h1>Welcome Back</h1>
+            <p class="subtitle">Sign in to access your private pages.</p>
+            <form id="loginForm">
+              <div class="field">
+                <label for="inpUser">Username</label>
+                <input id="inpUser" type="text" placeholder="Enter username" required autocomplete="username">
+              </div>
+              <div class="field">
+                <label for="inpPass">Password</label>
+                <input id="inpPass" type="password" placeholder="Enter password" required autocomplete="current-password">
+              </div>
+              <button type="submit" class="btn-primary" id="btnSubmit">Sign In</button>
+              <p class="msg-error" id="errMsg"></p>
+            </form>
+          </div>
+        </div>`;
+
+      document.getElementById('loginForm').addEventListener('submit', onLogin);
+    }
+
+    async function onLogin(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnSubmit');
+      const err = document.getElementById('errMsg');
+      const username = document.getElementById('inpUser').value.trim();
+      const password = document.getElementById('inpPass').value;
+
+      btn.disabled = true; btn.textContent = 'Signing in...'; err.classList.remove('show');
+
       try {
-        const res = await fetch(`${BACKEND}/check-auth`, {
-          method: 'GET',
-          credentials: 'include'
+        const res  = await fetch(`${API}/api/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
         });
-        isLoggedIn = res.ok;
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          auth.save(data.token, data.username);
+          navigate('/cloud');
+        } else {
+          err.textContent = data.error || 'Login failed.';
+          err.classList.add('show');
+        }
       } catch {
-        isLoggedIn = false;
+        err.textContent = 'Cannot connect to server.';
+        err.classList.add('show');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Sign In';
       }
     }
 
-    async function doLogin(username, password) {
-      const res = await fetch(`${BACKEND}/login`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+    // ── Protected page loader ─────────────
+    function showPage(path) {
+      const name = path.replace('/', '');
+      const navbar  = document.getElementById('navbar');
+      const app     = document.getElementById('app');
+
+      navbar.style.display = 'flex';
+      app.style.paddingTop = '';
+
+      // Active link
+      document.querySelectorAll('.nav-links a').forEach(a =>
+        a.classList.toggle('active', a.dataset.link === path));
+
+      // Username
+      document.getElementById('user-display').textContent = auth.user || '';
+
+      // Loading
+      app.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+      fetch(`${API}/${name}`, {
+        headers: { 'Authorization': `Bearer ${auth.token}` }
+      })
+      .then(res => {
+        if (res.status === 401) { auth.clear(); navigate('/login'); throw new Error('Unauthorized'); }
+        if (!res.ok) throw new Error('Failed to load page.');
+        return res.text();
+      })
+      .then(html => { app.innerHTML = html; })
+      .catch(err => {
+        if (err.message === 'Unauthorized') return;
+        app.innerHTML = `
+          <div class="login-wrap">
+            <div class="login-box" style="text-align:center">
+              <h1 style="margin-bottom:12px">Error</h1>
+              <p class="subtitle">${err.message}</p>
+              <button class="btn-primary" onclick="navigate('/cloud')" style="margin-top:20px">Retry</button>
+            </div>
+          </div>`;
       });
-      const data = await res.json();
-      if (data.success) {
-        isLoggedIn = true;
-        navigate('/cloud');
-      }
-      return data;
     }
 
-    async function doLogout() {
-      await fetch(`${BACKEND}/logout`, {
-        method: 'POST',
-        credentials: 'include'
-      });
-      isLoggedIn = false;
+    // ── Logout ────────────────────────────
+    document.getElementById('btnLogout').addEventListener('click', () => {
+      auth.clear();
       navigate('/login');
-    }
+    });
 
-    // ========================================
-    // NAV
-    // ========================================
-    function updateNav() {
-      const linksEl = document.getElementById('nav-links');
+    // ── Browser back / forward ────────────
+    window.addEventListener('popstate', () => resolve(location.pathname));
 
-      if (isLoggedIn) {
-        linksEl.innerHTML = `
-          <button class="nav-link ${currentRoute === '/cloud' ? 'active' : ''}"
-                  onclick="navigate('/cloud')">/cloud</button>
-          <button class="nav-link ${currentRoute === '/workplace' ? 'active' : ''}"
-                  onclick="navigate('/workplace')">/workplace</button>
-          <button class="nav-link" id="btn-logout"
-                  onclick="doLogout()">logout</button>
-        `;
-      } else {
-        linksEl.innerHTML = `
-          <button class="nav-link ${currentRoute === '/login' ? 'active' : ''}"
-                  onclick="navigate('/login')">/login</button>
-        `;
-      }
-    }
+    // ── Intercept nav links ───────────────
+    document.addEventListener('click', e => {
+      const link = e.target.closest('a[data-link]');
+      if (link) { e.preventDefault(); navigate(link.dataset.link); }
+    });
 
-    // ========================================
-    // PAGES
-    // ========================================
-    function renderHome() {
-      const app = document.getElementById('app');
-      app.innerHTML = `
-        <div class="login-card" style="text-align:center;">
-          <h1 style="margin-bottom:12px;">welcome</h1>
-          <p class="sub" style="margin-bottom:28px;">sign in to access your workspace</p>
-          <button class="btn-primary" onclick="navigate('/login')">go to login</button>
-        </div>
-      `;
-    }
-
-    function renderLogin() {
-      const app = document.getElementById('app');
-      app.innerHTML = `
-        <div class="login-card">
-          <h1>sign in</h1>
-          <p class="sub">enter your credentials to continue</p>
-          <form id="login-form" autocomplete="off">
-            <div class="form-group">
-              <label for="username">username</label>
-              <input type="text" id="username" placeholder="admin" required autofocus>
-            </div>
-            <div class="form-group">
-              <label for="password">password</label>
-              <input type="password" id="password" placeholder="••••••••" required>
-            </div>
-            <button type="submit" class="btn-primary" id="login-btn">sign in</button>
-            <div class="error-msg" id="login-error"></div>
-          </form>
-        </div>
-      `;
-
-      document.getElementById('login-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const btn = document.getElementById('login-btn');
-        const errEl = document.getElementById('login-error');
-        const username = document.getElementById('username').value.trim();
-        const password = document.getElementById('password').value;
-
-        btn.disabled = true;
-        btn.textContent = 'signing in...';
-        errEl.textContent = '';
-
-        try {
-          const result = await doLogin(username, password);
-          if (!result.success) {
-            errEl.textContent = result.message || 'Invalid credentials';
-          }
-        } catch {
-          errEl.textContent = 'Connection failed. Try again.';
-        }
-
-        btn.disabled = false;
-        btn.textContent = 'sign in';
-      });
-    }
-
-    async function renderProtected(route) {
-      const app = document.getElementById('app');
-      const pageName = route.replace('/', '');
-
-      // Loading state
-      app.innerHTML = `
-        <div class="page-container">
-          <div class="loader-wrap" style="padding-top:80px;">
-            <div class="spinner"></div>
-            <div class="spinner-label">loading /${pageName}...</div>
-          </div>
-        </div>
-      `;
-
-      try {
-        const res = await fetch(`${BACKEND}/page/${pageName}`, {
-          method: 'GET',
-          credentials: 'include'
-        });
-
-        if (res.status === 401) {
-          isLoggedIn = false;
-          navigate('/login');
-          return;
-        }
-
-        if (!res.ok) {
-          renderNotFound();
-          return;
-        }
-
-        const html = await res.text();
-
-        app.innerHTML = `
-          <div class="page-container">
-            <div class="page-header">
-              <h1>/${pageName}</h1>
-              <span class="tag">protected</span>
-            </div>
-            <div class="page-content">${html}</div>
-          </div>
-        `;
-      } catch {
-        app.innerHTML = `
-          <div class="page-container">
-            <div class="page-content" style="text-align:center;">
-              <p style="color:var(--danger);margin-bottom:12px;">Failed to load /${pageName}</p>
-              <p style="color:var(--text-muted);font-size:0.8rem;">Backend might be unreachable</p>
-              <button class="btn-primary" style="max-width:200px;margin-top:24px;"
-                      onclick="navigate('${route}')">retry</button>
-            </div>
-          </div>
-        `;
-      }
-    }
-
-    function renderNotFound() {
-      const app = document.getElementById('app');
-      app.innerHTML = `
-        <div class="login-card" style="text-align:center;">
-          <h1 style="font-size:3rem;margin-bottom:8px;">404</h1>
-          <p class="sub" style="margin-bottom:28px;">page not found</p>
-          <button class="btn-primary" onclick="navigate('/')">go home</button>
-        </div>
-      `;
-    }
-
-    // ========================================
-    // INIT
-    // ========================================
-    handleRoute();
+    // ── Boot ──────────────────────────────
+    resolve(location.pathname);
   </script>
+
 </body>
 </html>
