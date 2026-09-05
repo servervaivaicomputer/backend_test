@@ -1,20 +1,27 @@
-const auth = (req, res, next) => {
-  const token = req.cookies?.auth_token;
+const jwt = require('jsonwebtoken');
 
-  if (!token) {
-    return res.status(401).json({ authenticated: false, message: 'Not logged in' });
+const authMiddleware = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({
+      success: false,
+      error: 'Access denied. No token provided.'
+    });
   }
 
-  // Simple validation (token exists = logged in)
-  // For stronger check, decode and verify token structure
+  const token = authHeader.split(' ')[1];
+
   try {
-    const decoded = Buffer.from(token, 'base64').toString();
-    const [username] = decoded.split(':');
-    req.user = username;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
     next();
-  } catch {
-    return res.status(401).json({ authenticated: false, message: 'Invalid token' });
+  } catch (err) {
+    return res.status(401).json({
+      success: false,
+      error: 'Invalid or expired token.'
+    });
   }
 };
 
-module.exports = auth;
+module.exports = authMiddleware;
